@@ -1,0 +1,15 @@
+﻿using ECMS.API.Models;
+//using System.Collections.Generic;
+//using System.Threading.Tasks;
+
+namespace ECMS.API.Repositories.Interfaces
+{
+    public interface IEmployeeRepository
+    {
+        Task<IEnumerable<Employee>> GetAllAsync();
+        Task<Employee?> GetByIdAsync(int id);
+        Task<Employee> AddAsync(Employee employee);
+        Task UpdateAsync(Employee employee);
+        Task<bool> SoftDeleteAsync(int id);
+    }
+}
