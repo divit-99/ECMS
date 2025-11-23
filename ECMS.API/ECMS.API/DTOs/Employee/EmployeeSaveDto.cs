@@ -18,5 +18,7 @@ namespace ECMS.API.DTOs.Employee
 
         [Required]
         public int CompanyId { get; set; }
+
+        public bool IsActive { get; set; }
     }
 }

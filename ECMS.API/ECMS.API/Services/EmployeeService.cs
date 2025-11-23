@@ -17,10 +17,19 @@ namespace ECMS.API.Services
             _companyRepository = companyRepository;
         }
 
-        public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
+        //public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
+        //{
+        //    var employees = await _employeeRepository.GetAllAsync();
+        //    return employees.Select(e => e.ToDto());
+        //}
+
+        public async Task<(IEnumerable<EmployeeDto> Data, int TotalCount)> GetAllEmployeesAsync(int pageNumber, int pageSize, string? search)
         {
-            var employees = await _employeeRepository.GetAllAsync();
-            return employees.Select(e => e.ToDto());
+            var employees = await _employeeRepository.GetAllAsync(pageNumber, pageSize, search);
+            var count = await _employeeRepository.GetCountAsync(search);
+
+            var dtos = employees.Select(e => e.ToDto());
+            return (dtos, count);
         }
 
         public async Task<EmployeeDto?> GetEmployeeByIdAsync(int id)
@@ -34,29 +43,29 @@ namespace ECMS.API.Services
             await ValidateCompanyAsync(dto.CompanyId);
 
             var entity = dto.ToEntity();
-            entity.IsActive = true;
 
             await _employeeRepository.AddAsync(entity);
             return entity.ToDto();
         }
 
-        public async Task<bool> UpdateEmployeeAsync(int id, EmployeeSaveDto dto)
+        public async Task<EmployeeDto?> UpdateEmployeeAsync(int id, EmployeeSaveDto dto)
         {
             var employee = await _employeeRepository.GetByIdAsync(id);
 
             if (employee == null)
-                return false;
+                return null;
 
             await ValidateCompanyAsync(dto.CompanyId);
 
             employee.UpdateFromDto(dto);
 
             await _employeeRepository.UpdateAsync(employee);
-            return true;
+
+            return employee.ToDto();
         }
 
         public Task<bool> DeleteEmployeeAsync(int id)
-                            => _employeeRepository.SoftDeleteAsync(id);
+                            => _employeeRepository.DeleteAsync(id);
 
         private async Task ValidateCompanyAsync(int companyId)
         {

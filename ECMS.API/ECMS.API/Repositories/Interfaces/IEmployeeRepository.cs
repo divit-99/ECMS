@@ -6,10 +6,11 @@ namespace ECMS.API.Repositories.Interfaces
 {
     public interface IEmployeeRepository
     {
-        Task<IEnumerable<Employee>> GetAllAsync();
+        Task<IEnumerable<Employee>> GetAllAsync(int pageNumber, int pageSize, string? search);
         Task<Employee?> GetByIdAsync(int id);
         Task<Employee> AddAsync(Employee employee);
         Task UpdateAsync(Employee employee);
-        Task<bool> SoftDeleteAsync(int id);
+        Task<bool> DeleteAsync(int id);
+        Task<int> GetCountAsync(string? search);
     }
 }

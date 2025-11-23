@@ -15,7 +15,8 @@ namespace ECMS.API.Mappings
                 Phone = e.Phone,
                 JobTitle = e.JobTitle,
                 CompanyId = e.CompanyID,
-                CompanyName = e.Company?.CompanyName ?? string.Empty
+                CompanyName = e.Company?.CompanyName ?? string.Empty,
+                IsActive = e.IsActive
             };
         }
 
@@ -27,7 +28,8 @@ namespace ECMS.API.Mappings
                 Email = dto.Email,
                 Phone = dto.Phone,
                 JobTitle = dto.JobTitle,
-                CompanyID = dto.CompanyId
+                CompanyID = dto.CompanyId,
+                IsActive= dto.IsActive
             };
         }
 
@@ -38,6 +40,7 @@ namespace ECMS.API.Mappings
             e.Phone = dto.Phone;
             e.JobTitle = dto.JobTitle;
             e.CompanyID = dto.CompanyId;
+            e.IsActive = dto.IsActive;
         }
     }
 }

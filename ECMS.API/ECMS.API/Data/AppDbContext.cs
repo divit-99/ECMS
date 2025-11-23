@@ -9,6 +9,7 @@ namespace ECMS.API.Data
 
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,6 +67,25 @@ namespace ECMS.API.Data
                     .WithMany(c => c.Employees)
                     .HasForeignKey(e => e.CompanyID)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+
+                entity.Property(u => u.FullName)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(u => u.Email)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.HasIndex(u => u.Email)
+                    .IsUnique();
+
+                entity.Property(u => u.PasswordHash)
+                    .IsRequired();
             });
         }
 

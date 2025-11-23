@@ -16,11 +16,26 @@ namespace ECMS.API.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Employee>> GetAllAsync()
+        public async Task<IEnumerable<Employee>> GetAllAsync(int pageNumber, int pageSize, string? search)
         {
-            return await _context.Employees
-                        .Include(e => e.Company)
-                        .Where(e => e.IsActive)
+            var query = _context.Employees
+            .Include(e => e.Company)
+            .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                query = query.Where(e =>
+                    e.Name.ToLower().Contains(term) ||
+                    e.Email.ToLower().Contains(term));
+                    //|| e.JobTitle.ToLower().Contains(term) ||
+                    //e.Company.CompanyName.ToLower().Contains(term));
+            }
+
+            return await query
+                        .OrderBy(e => e.ID)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
                         .ToListAsync();
         }
 
@@ -28,7 +43,6 @@ namespace ECMS.API.Repositories
         {
             return await _context.Employees
                         .Include(e => e.Company)
-                        .Where(e => e.IsActive)
                         .FirstOrDefaultAsync(e => e.ID == id);
         }
 
@@ -68,18 +82,33 @@ namespace ECMS.API.Repositories
             }
         }
 
-        public async Task<bool> SoftDeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var employee = await _context.Employees
-                .FirstOrDefaultAsync(e => e.ID == id && e.IsActive);
+                .FirstOrDefaultAsync(e => e.ID == id);
 
             if (employee == null)
                 return false;
 
-            employee.IsActive = false;
-
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<int> GetCountAsync(string? search)
+        {
+            var query = _context.Employees
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                query = query.Where(e =>
+                    e.Name.ToLower().Contains(term) ||
+                    e.Email.ToLower().Contains(term));
+                    //|| e.JobTitle.ToLower().Contains(term) ||
+                    //e.Company.CompanyName.ToLower().Contains(term));
+            }
+            return await query.CountAsync();
         }
     }
 }

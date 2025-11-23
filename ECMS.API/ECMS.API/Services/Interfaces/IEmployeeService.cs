@@ -4,10 +4,11 @@ namespace ECMS.API.Services.Interfaces
 {
     public interface IEmployeeService
     {
-        Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync();
+        Task<(IEnumerable<EmployeeDto> Data, int TotalCount)> GetAllEmployeesAsync(int pageNumber, int pageSize, string? search);
+
         Task<EmployeeDto?> GetEmployeeByIdAsync(int id);
         Task<EmployeeDto> AddEmployeeAsync(EmployeeSaveDto employee);
-        Task<bool> UpdateEmployeeAsync(int id, EmployeeSaveDto employee);
+        Task<EmployeeDto?> UpdateEmployeeAsync(int id, EmployeeSaveDto employee);
         Task<bool> DeleteEmployeeAsync(int id);
     }
 }
