@@ -1,116 +1,121 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Box, Container, Typography, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
+
 import AddIcon from "@mui/icons-material/Add";
+
 import SearchBar from "../../components/common/SearchBar";
 import Pagination from "../../components/common/Pagination";
 import EmployeeList from "../../components/employee/EmployeeList";
 import EmployeeFormModal from "../../components/employee/EmployeeFormModal";
-import { getEmployees, updateEmployee, deleteEmployee } from "../../api/employee.api";
+
+import { getEmployees, updateEmployee, deleteEmployee, createEmployee } from "../../api/employee.api";
+
 import { getCompanies } from "../../api/company.api";
 import type { Employee, Company } from "../../types/employee.types";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function Dashboard() {
-  const [employees, setEmployees] = React.useState<Employee[]>([]);
-  const [companies, setCompanies] = React.useState<Company[]>([]);
-  const [search, setSearch] = React.useState("");
-  const [page, setPage] = React.useState(1);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [editingEmployee, setEditingEmployee] = React.useState<Employee | null>(null);
-  const [toastOpen, setToastOpen] = React.useState(false);
-  const [toastMessage, setToastMessage] = React.useState("");
-  const [toastSeverity, setToastSeverity] = React.useState<"success" | "error">("success");
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const showToast = (msg: string, severity: "success" | "error" = "success") => {
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">( "success" );
+
+  const showToast = (
+    msg: string,
+    severity: "success" | "error" = "success"
+  ) => {
     setToastMessage(msg);
     setToastSeverity(severity);
     setToastOpen(true);
   };
 
-  React.useEffect(() => {
+  // Debounce search on user input searchTerm
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchTerm);
+      setPage(1);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Mapping helper
+  const mapEmployee = (e: any): Employee => ({
+    id: e.id,
+    name: e.fullName ?? e.name,
+    email: e.email,
+    phone: e.phone,
+    jobTitle: e.jobTitle,
+    companyId: e.companyId,
+    companyName: e.companyName,
+    isActive: Boolean(e.isActive),
+  });
+
+  // Load companies
+  useEffect(() => {
     getCompanies()
-      .then((data) => setCompanies(data))
+      .then(setCompanies)
       .catch(() => {});
   }, []);
 
-  React.useEffect(() => {
+  // Load employees
+  useEffect(() => {
     setLoading(true);
     setError(null);
 
     getEmployees(page, ITEMS_PER_PAGE, search)
       .then((data) => {
         const items = Array.isArray(data.data) ? data.data : [];
-
-        const mapped: Employee[] = items.map((e: any) => ({
-          id: e.id,
-          name: e.fullName ?? e.name,
-          email: e.email,
-          phone: e.phone,
-          jobTitle: e.jobTitle,
-          companyId: e.companyId,
-          companyName: e.companyName,
-          isActive: Boolean(e.isActive),
-        }));
-
-        setEmployees(mapped);
+        setEmployees(items.map(mapEmployee));
+        setTotalPages(Math.ceil(data.totalCount / ITEMS_PER_PAGE));
+        setTotalCount(data.totalCount);
       })
-      .catch((err) => {
+      .catch(() => {
         setError("Failed to load employees");
-        console.error(err);
       })
       .finally(() => setLoading(false));
   }, [page, search]);
 
+  // Handle Add / Edit Save
   const handleSave = async (data: Partial<Employee>) => {
-    if (editingEmployee) {
-      try {
+    try {
+      if (editingEmployee) {
         await updateEmployee(editingEmployee.id, data);
         showToast("Employee updated", "success");
-        setModalOpen(false);
-        setEditingEmployee(null);
-
-        getEmployees(page, ITEMS_PER_PAGE, search).then((res) => {
-          const list = res.data || [];
-          setEmployees(
-            list.map((e: any) => ({
-              id: e.id,
-              name: e.fullName ?? e.name,
-              email: e.email,
-              phone: e.phone,
-              jobTitle: e.jobTitle,
-              companyId: e.companyId,
-              companyName: e.companyName,
-              isActive: Boolean(e.isActive),
-            }))
-          );
-        });
-      } catch (err: any) {
-        showToast("Update failed", "error");
-        console.error(err);
+      } else {
+        await createEmployee(data);
+        showToast("Employee created", "success");
       }
-    } else {
-      const newEmp: Employee = {
-        id: Math.max(0, ...employees.map((e) => e.id)) + 1,
-        name: data.name ?? "",
-        email: data.email ?? "",
-        phone: data.phone ?? "",
-        jobTitle: data.jobTitle ?? "",
-        companyId: data.companyId ?? companies[0]?.id ?? 1,
-        companyName: companies.find((c) => c.id === data.companyId)?.companyName,
-        isActive: data.isActive ?? true,
-      };
 
-      setEmployees((prev) => [...prev, newEmp]);
-      showToast("Employee added (local)", "success");
       setModalOpen(false);
+      setEditingEmployee(null);
+
+      // Rerender post save
+      const res = await getEmployees(page, ITEMS_PER_PAGE, search);
+      const items = Array.isArray(res.data) ? res.data : [];
+      setEmployees(items.map(mapEmployee));
+    } catch (err) {
+      showToast("Save failed", "error");
+      console.error(err);
     }
   };
 
+  // Handle delete
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this employee?")) return;
+    if (!window.confirm("Are you sure you want to delete this employee?"))
+      return;
 
     try {
       await deleteEmployee(id);
@@ -127,7 +132,7 @@ export default function Dashboard() {
         <Box>
           <Typography variant="h4">Employee List</Typography>
           <Typography variant="body2" color="text.secondary">
-            {employees.length} employees found
+            {totalCount} employees found
           </Typography>
         </Box>
 
@@ -143,7 +148,7 @@ export default function Dashboard() {
         </Button>
       </Box>
 
-      <SearchBar value={search} onChange={setSearch} />
+      <SearchBar value={searchTerm} onChange={setSearchTerm} />
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
@@ -164,7 +169,7 @@ export default function Dashboard() {
             onDelete={handleDelete}
           />
 
-          <Pagination page={page} totalPages={10} onChange={setPage} />
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </>
       )}
 

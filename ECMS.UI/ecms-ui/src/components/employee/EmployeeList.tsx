@@ -1,4 +1,16 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, IconButton, Typography, Box } from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Chip,
+  IconButton,
+  Typography,
+  Box,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import type { Employee } from "../../types/employee.types";
@@ -49,10 +61,18 @@ export default function EmployeeList({ employees, onEdit, onDelete }: Props) {
                 />
               </TableCell>
               <TableCell align="right">
-                <IconButton onClick={() => onEdit(e)} size="small" color="primary">
+                <IconButton
+                  onClick={() => onEdit(e)}
+                  size="small"
+                  color="primary"
+                >
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => onDelete(e.id)} size="small" color="error">
+                <IconButton
+                  onClick={() => onDelete(e.id)}
+                  size="small"
+                  color="error"
+                >
                   <DeleteIcon />
                 </IconButton>
               </TableCell>

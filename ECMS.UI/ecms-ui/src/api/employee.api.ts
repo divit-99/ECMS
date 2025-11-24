@@ -14,7 +14,28 @@ export const getEmployees = async (
 };
 
 export const updateEmployee = async (id: number, data: Partial<Employee>) => {
-  const res = await axiosInstance.put(`/Employee/${id}`, data);
+  const res = await axiosInstance.put(`/Employee/${id}`, {
+    fullName: data.name,
+    email: data.email,
+    phone: data.phone,
+    jobTitle: data.jobTitle,
+    companyId: data.companyId,
+    isActive: data.isActive,
+  });
+
+  return res.data;
+};
+
+export const createEmployee = async (data: Partial<Employee>) => {
+  const res = await axiosInstance.post("/Employee", {
+    fullName: data.name,
+    email: data.email,
+    phone: data.phone,
+    jobTitle: data.jobTitle,
+    companyId: data.companyId,
+    isActive: data.isActive,
+  });
+
   return res.data;
 };
 
