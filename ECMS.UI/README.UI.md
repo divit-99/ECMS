@@ -1,0 +1,201 @@
+# Employee Contact Management System — Frontend (React + TypeScript + MUI)
+
+This repository contains the **React-based frontend** for the Employee Contact Management System.  
+The UI is fully responsive, built with **React + TypeScript + Material UI**, and communicates with a .NET Web API backend.
+
+-----------------------------------------------------------------------
+
+## 🚀 Features (Frontend)
+
+### 🔐 Authentication
+- Login & Signup screen
+- Form validation using Yup + React Hook Form
+- Snackbar-based toast notifications
+- AuthContext for managing JWT + user information
+- Protected routes with automatic redirects
+
+### 👥 Employee Management
+- View paginated employee list
+- Search employees by name, or email
+- Add new employees
+- Edit employee details
+- Delete employees, with confirmation dialog
+- Real-time validation on form fields
+- Auto-refresh after create/update/delete
+
+### 🏢 Company Dropdown
+- Fetch company list from API
+- Pre-loaded in EmployeeFormModal
+- Dropdown to select company for each employee
+
+### 🎯 UX & UI
+- Fully responsive layout (mobile + tablet + desktop)
+- MUI components for consistent styling
+- Centered authentication box with smooth height transitions
+- Debounced search for optimized API calls
+- Toast notifications for all actions
+- ErrorBoundary + fallback UI for unexpected failures
+
+---
+
+## 🧱 Tech Stack
+
+### **React**
+- Functional components
+- Custom hooks (Auth context, API calls)
+- React Router v6
+
+### **TypeScript**
+- Strongly typed props, components, DTOs, contexts, API functions
+- Validation schemas with inferred types
+
+### **Material UI**
+- Theme-based styling
+- Grid, Table, Dialog, Modal, Snackbar, Buttons, TextFields
+- Mobile-responsive UI
+
+### **React Hook Form + Yup**
+- Schema-based validation
+- Clean form architecture
+
+### **Axios**
+- API communication through a shared axiosInstance
+- Authorization header auto-attached through interceptors
+
+---
+
+## 📂 Project Structure
+
+ECMS.UI/
+│
+├── ecms-ui/                    # Root React project
+|   |
+│   ├── .env                    # Environment variables (e.g., VITE_API_BASE_URL)
+|   |
+│   ├── node_modules/           # Installed npm packages
+|   |
+│   ├── public/                 # Static public assets (e.g., vite.svg)
+│   │
+│   └── src/                    # Main source code
+│       │
+│       ├── api/                # All API calls (Axios services)
+│       │   └── auth.api.ts
+│       │   └── company.api.ts
+│       │   └── employee.api.ts
+│       │
+│       ├── assets/             # Images, logos, fonts, global static files to be here
+│       │
+│       ├── components/         # Reusable UI components
+│       │   ├── auth/           # Login/Signup Auth form component
+│       │   ├── common/         # Shared reusable components (Pagination, SearchBar, etc.)
+│       │   ├── employee/       # Employee-related UI elements (List, etc.)
+│       │   ├── error/          # Error Boundary component (404, fallback UI)
+│       │   └── layout/         # Navbar wrapper
+│       │
+│       ├── context/            # React Context (e.g., AuthContext)
+│       │
+│       ├── layout/             # Page-level layout components (e.g., AppLayout)
+│       │
+│       ├── pages/              # Route-level pages
+│       │   ├── Auth/           # Login, Signup Auth page
+│       │   ├── Employees/      # Dashboard page
+│       │   └── Error/          # Error page
+│       │
+│       ├── routes/             # ProtectedRoute / PrivateRoute / Route guards
+│       │
+│       ├── theme/              # appTheme (e.g., MUI theme, color palette, typography, breakpoints)
+│       │
+│       ├── types/              # TypeScript interfaces, DTOs, models (e.g., auth.types, employee.types)
+│       │
+│       ├── utils/              # Helper methods, mappers, formatters, constants (e.g., axiosInstance, mapEmployee)
+│       │
+│       ├── validations/        # Yup validation schemas / custom validators
+│       │
+│       ├── App.tsx             # Root App component
+│       ├── main.tsx            # ReactDOM root + ThemeProvider / Context providers
+│       └── index.css           # Global CSS (resets, fonts)
+│
+└────────────────────────────────────────────────────────────────────────────────────
+
+---
+
+## 📡 API Integration
+
+The UI communicates with a .NET Web API backend using axios:
+
+- `GET /api/Employee`
+- `POST /api/Employee`
+- `PUT /api/Employee/{id}`
+- `DELETE /api/Employee/{id}`
+- `GET /api/Company`
+- `POST /api/Auth/login`
+- `POST /api/Auth/signup`
+
+A global `axiosInstance` handles:
+- Base URL
+- JWT injection into Authorization header
+- Error propagation
+
+---
+
+## 🔒 Authentication Flow
+
+1. User logs in or signs up
+2. Backend returns JWT
+3. JWT is stored in localStorage
+4. AuthContext exposes:
+   - `isAuthenticated`
+   - `user`
+   - `logout()`
+   - `login()`
+5. ProtectedRoute checks if JWT exists before rendering secure pages
+
+---
+
+## 📱 Responsiveness
+
+- Auth box scales for mobile screens
+- Employee table scrolls horizontally on small devices
+- Modals adapt to screen size
+- Layout spacing adjusts automatically using MUI breakpoints
+
+---
+
+## 🧪 Validation
+
+### Login / Signup
+- Required fields
+- Email format check
+- Password min-length
+
+### Employee Form
+- FullName required
+- Email format required
+- Phone number required
+- JobTitle required
+- Company required
+- Backend validation errors shown via toast
+
+---
+
+## 📌 Environment Variables
+
+Update backend API endpoint in `.env` file variable:
+
+'VITE_API_BASE_URL'
+
+---
+
+## ▶️ Getting Started
+
+### 1. Install dependencies
+
+npm install
+
+### 2. Start Vite dev server
+
+npm run dev
+
+The app will open at: http://localhost:5173
+
+--------------------------------------------------------------------------------

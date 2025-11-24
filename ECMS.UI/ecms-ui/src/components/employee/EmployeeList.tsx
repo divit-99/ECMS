@@ -7,9 +7,12 @@ interface Props {
   employees: Employee[];
   onEdit: (emp: Employee) => void;
   onDelete: (id: number) => void;
+  sortBy?: string;
+  sortDir?: "asc" | "desc";
+  onSort?: (field: string) => void;
 }
 
-export default function EmployeeList({ employees, onEdit, onDelete }: Props) {
+export default function EmployeeList({ employees, onEdit, onDelete, sortBy, sortDir, onSort }: Props) {
   if (employees.length === 0) {
     return (
       <Box sx={{ textAlign: "center", py: 6 }}>
@@ -18,18 +21,31 @@ export default function EmployeeList({ employees, onEdit, onDelete }: Props) {
     );
   }
 
+  const handleSort = (field: string) => {
+    if (onSort) onSort(field);
+  };
+
+  const arrow = (field: string) =>
+    sortBy === field ? (sortDir === "asc" ? "↑" : "↓") : "";
+
   return (
     <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Phone</TableCell>
-            <TableCell>Job Title</TableCell>
-            <TableCell>Company</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell align="right">Actions</TableCell>
+            <TableCell onClick={() => handleSort("name")} sx={{ fontWeight: 600, cursor: "pointer" }}>
+              Name {arrow("name")}
+            </TableCell>
+            <TableCell onClick={() => handleSort("email")} sx={{ fontWeight: 600, cursor: "pointer" }}>
+              Email {arrow("email")}
+            </TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
+            <TableCell onClick={() => handleSort("jobTitle")} sx={{ fontWeight: 600, cursor: "pointer" }}>
+              Job Title {arrow("jobTitle")}
+            </TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Company</TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+            <TableCell sx={{ fontWeight: 600 }} align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
 
@@ -49,10 +65,18 @@ export default function EmployeeList({ employees, onEdit, onDelete }: Props) {
                 />
               </TableCell>
               <TableCell align="right">
-                <IconButton onClick={() => onEdit(e)} size="small" color="primary">
+                <IconButton
+                  onClick={() => onEdit(e)}
+                  size="small"
+                  color="primary"
+                >
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => onDelete(e.id)} size="small" color="error">
+                <IconButton
+                  onClick={() => onDelete(e.id)}
+                  size="small"
+                  color="error"
+                >
                   <DeleteIcon />
                 </IconButton>
               </TableCell>

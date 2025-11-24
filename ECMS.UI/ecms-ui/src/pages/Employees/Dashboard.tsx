@@ -1,123 +1,163 @@
-import React from "react";
-import { Box, Container, Typography, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, Container, Typography, Button, CircularProgress, Snackbar, Alert} from "@mui/material";
+
 import AddIcon from "@mui/icons-material/Add";
+
 import SearchBar from "../../components/common/SearchBar";
 import Pagination from "../../components/common/Pagination";
 import EmployeeList from "../../components/employee/EmployeeList";
 import EmployeeFormModal from "../../components/employee/EmployeeFormModal";
-import { getEmployees, updateEmployee, deleteEmployee } from "../../api/employee.api";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
+
+import { getEmployees, updateEmployee, deleteEmployee, createEmployee } from "../../api/employee.api";
 import { getCompanies } from "../../api/company.api";
 import type { Employee, Company } from "../../types/employee.types";
+import { mapEmployee } from "../../utils/mapEmployee";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function Dashboard() {
-  const [employees, setEmployees] = React.useState<Employee[]>([]);
-  const [companies, setCompanies] = React.useState<Company[]>([]);
-  const [search, setSearch] = React.useState("");
-  const [page, setPage] = React.useState(1);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [editingEmployee, setEditingEmployee] = React.useState<Employee | null>(null);
-  const [toastOpen, setToastOpen] = React.useState(false);
-  const [toastMessage, setToastMessage] = React.useState("");
-  const [toastSeverity, setToastSeverity] = React.useState<"success" | "error">("success");
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [saving, setSaving] = useState(false);
 
-  const showToast = (msg: string, severity: "success" | "error" = "success") => {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
+  const showToast = (
+    msg: string,
+    severity: "success" | "error" = "success"
+  ) => {
     setToastMessage(msg);
     setToastSeverity(severity);
     setToastOpen(true);
   };
 
-  React.useEffect(() => {
+  // Debounce search on user input searchTerm
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchTerm);
+      setPage(1);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Load companies
+  useEffect(() => {
     getCompanies()
-      .then((data) => setCompanies(data))
+      .then(setCompanies)
       .catch(() => {});
   }, []);
 
-  React.useEffect(() => {
+  // Load employees
+  useEffect(() => {
     setLoading(true);
     setError(null);
 
-    getEmployees(page, ITEMS_PER_PAGE, search)
+    getEmployees(page, ITEMS_PER_PAGE, search, sortBy, sortDir)
       .then((data) => {
         const items = Array.isArray(data.data) ? data.data : [];
-
-        const mapped: Employee[] = items.map((e: any) => ({
-          id: e.id,
-          name: e.fullName ?? e.name,
-          email: e.email,
-          phone: e.phone,
-          jobTitle: e.jobTitle,
-          companyId: e.companyId,
-          companyName: e.companyName,
-          isActive: Boolean(e.isActive),
-        }));
-
-        setEmployees(mapped);
+        setEmployees(items.map(mapEmployee));
+        setTotalPages(Math.ceil(data.totalCount / ITEMS_PER_PAGE));
+        setTotalCount(data.totalCount);
       })
-      .catch((err) => {
-        setError("Failed to load employees");
-        console.error(err);
+      .catch(() => {
+        setError("Failed to load employees!");
       })
       .finally(() => setLoading(false));
-  }, [page, search]);
+  }, [page, search, sortBy, sortDir]);
 
-  const handleSave = async (data: Partial<Employee>) => {
-    if (editingEmployee) {
-      try {
-        await updateEmployee(editingEmployee.id, data);
-        showToast("Employee updated", "success");
-        setModalOpen(false);
-        setEditingEmployee(null);
-
-        getEmployees(page, ITEMS_PER_PAGE, search).then((res) => {
-          const list = res.data || [];
-          setEmployees(
-            list.map((e: any) => ({
-              id: e.id,
-              name: e.fullName ?? e.name,
-              email: e.email,
-              phone: e.phone,
-              jobTitle: e.jobTitle,
-              companyId: e.companyId,
-              companyName: e.companyName,
-              isActive: Boolean(e.isActive),
-            }))
-          );
-        });
-      } catch (err: any) {
-        showToast("Update failed", "error");
-        console.error(err);
-      }
+  // Sort handler
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      const newEmp: Employee = {
-        id: Math.max(0, ...employees.map((e) => e.id)) + 1,
-        name: data.name ?? "",
-        email: data.email ?? "",
-        phone: data.phone ?? "",
-        jobTitle: data.jobTitle ?? "",
-        companyId: data.companyId ?? companies[0]?.id ?? 1,
-        companyName: companies.find((c) => c.id === data.companyId)?.companyName,
-        isActive: data.isActive ?? true,
-      };
+      setSortBy(column);
+      setSortDir("asc");
+    }
 
-      setEmployees((prev) => [...prev, newEmp]);
-      showToast("Employee added (local)", "success");
+    setPage(1);
+  };
+
+  // Handle Add / Edit Save
+  const handleSave = async (data: Partial<Employee>) => {
+    try {
+      setSaving(true);
+
+      if (editingEmployee) {
+        let res = await updateEmployee(editingEmployee.id, data);
+        showToast(res.message ?? "Employee updated!", "success");
+      } else {
+        let res = await createEmployee(data);
+        showToast(res.message ?? "Employee created!", "success");
+      }
+
       setModalOpen(false);
+      setEditingEmployee(null);
+
+      // Rerender post save
+      setPage(1);
+      const res = await getEmployees(page, ITEMS_PER_PAGE, search);
+      const items = Array.isArray(res.data) ? res.data : [];
+      setEmployees(items.map(mapEmployee));
+    } catch (err: any) {
+      const apiMsg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Save failed!";
+
+      showToast(apiMsg, "error");
+      console.error(err);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this employee?")) return;
+  // Handle delete (open dialog)
+  const requestDelete = (id: number) => {
+    setDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
 
     try {
-      await deleteEmployee(id);
-      showToast("Employee deleted", "success");
-      setEmployees((prev) => prev.filter((e) => e.id !== id));
-    } catch (err) {
-      showToast("Delete failed", "error");
+      const res = await deleteEmployee(deleteId);
+      showToast(res.message ?? "Employee deleted!", "success");
+
+      setEmployees((prev) => prev.filter((e) => e.id !== deleteId));
+    } catch (err: any) {
+      const apiMsg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Delete failed!";
+
+      showToast(apiMsg, "error");
+    } finally {
+      setConfirmOpen(false);
+      setDeleteId(null);
+      setDeleting(false);
     }
   };
 
@@ -127,7 +167,7 @@ export default function Dashboard() {
         <Box>
           <Typography variant="h4">Employee List</Typography>
           <Typography variant="body2" color="text.secondary">
-            {employees.length} employees found
+            {totalCount} employees found
           </Typography>
         </Box>
 
@@ -143,7 +183,7 @@ export default function Dashboard() {
         </Button>
       </Box>
 
-      <SearchBar value={search} onChange={setSearch} />
+      <SearchBar value={searchTerm} onChange={setSearchTerm} />
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
@@ -161,30 +201,48 @@ export default function Dashboard() {
               setEditingEmployee(emp);
               setModalOpen(true);
             }}
-            onDelete={handleDelete}
+            onDelete={(id) => requestDelete(id)}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
           />
 
-          <Pagination page={page} totalPages={10} onChange={setPage} />
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </>
       )}
 
       <EmployeeFormModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => !saving && setModalOpen(false)}
         onSave={handleSave}
         employee={editingEmployee}
         companies={companies}
+        saving={saving}
       />
 
       <Snackbar
         open={toastOpen}
         autoHideDuration={4000}
         onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert onClose={() => setToastOpen(false)} severity={toastSeverity}>
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity={toastSeverity}
+          variant="filled"
+        >
           {toastMessage}
         </Alert>
       </Snackbar>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete Employee"
+        message="Are you sure you want to delete this employee?"
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        deleting={deleting}
+      />
     </Container>
   );
 }

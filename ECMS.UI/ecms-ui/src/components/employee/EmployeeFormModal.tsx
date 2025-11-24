@@ -1,16 +1,17 @@
 import { useEffect } from "react";
-import { MenuItem, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button, FormControlLabel, Checkbox } from "@mui/material";
-import { useForm, Controller, type SubmitHandler } from "react-hook-form";
+import { MenuItem, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button, FormControlLabel, Checkbox, CircularProgress } from "@mui/material";
+import { useForm, Controller, type SubmitHandler, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { Employee, Company } from "../../types/employee.types";
 import { employeeValidationSchema, type EmployeeFormData } from "../../validations/employeeValidation";
 
-interface Props {
+interface EmployeeFormModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: Partial<Employee>) => void;
   employee?: Employee | null;
   companies: Company[];
+  saving?: boolean;
 }
 
 function EmployeeFormModal({
@@ -19,25 +20,29 @@ function EmployeeFormModal({
   onSave,
   employee,
   companies,
-}: Props) {
+  saving,
+}: EmployeeFormModalProps) {
   const isEditMode = !!employee;
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: { isValid, errors },
+    formState: { isValid, isDirty },
   } = useForm<EmployeeFormData>({
+    resolver: yupResolver(
+      employeeValidationSchema
+    ) as Resolver<EmployeeFormData>,
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       name: "",
       email: "",
       phone: "",
       jobTitle: "",
-      companyId: companies[0]?.id ?? 1,
+      companyId: companies && companies.length ? companies[0].id : 1,
       isActive: true,
     },
-    resolver: yupResolver(employeeValidationSchema) as any, // <– Fix resolver type error
-    mode: "onChange",
   });
 
   // Reset form when edit mode changes
@@ -57,7 +62,7 @@ function EmployeeFormModal({
         email: "",
         phone: "",
         jobTitle: "",
-        companyId: companies[0]?.id ?? 1,
+        companyId: companies && companies.length ? companies[0].id : 1,
         isActive: true,
       });
     }
@@ -69,22 +74,24 @@ function EmployeeFormModal({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{isEditMode ? "Edit Employee" : "Add Employee"}</DialogTitle>
+      <DialogTitle sx={{ fontSize: "4rem", px: 4 }}>{isEditMode ? "Edit Employee" : "Add Employee"}</DialogTitle>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} style={{ opacity: saving ? 0.6 : 1 }}>
         <DialogContent dividers>
-
           <Controller
             name="name"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <TextField
                 {...field}
-                label="Full Name"
+                id="name"
+                label="Full name"
+                required
                 fullWidth
                 margin="normal"
-                error={!!errors.name}
-                helperText={errors.name?.message}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                disabled={saving}
               />
             )}
           />
@@ -92,14 +99,17 @@ function EmployeeFormModal({
           <Controller
             name="email"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <TextField
                 {...field}
+                id="email"
                 label="Email"
+                required
                 fullWidth
                 margin="normal"
-                error={!!errors.email}
-                helperText={errors.email?.message}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                disabled={saving}
               />
             )}
           />
@@ -107,12 +117,16 @@ function EmployeeFormModal({
           <Controller
             name="phone"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <TextField
                 {...field}
+                id="phone"
                 label="Phone"
                 fullWidth
                 margin="normal"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                disabled={saving}
               />
             )}
           />
@@ -120,12 +134,16 @@ function EmployeeFormModal({
           <Controller
             name="jobTitle"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <TextField
                 {...field}
+                id="jobTitle"
                 label="Job Title"
                 fullWidth
                 margin="normal"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                disabled={saving}
               />
             )}
           />
@@ -133,18 +151,26 @@ function EmployeeFormModal({
           <Controller
             name="companyId"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <TextField
                 {...field}
-                select
+                id="companyId"
                 label="Company"
+                select
+                required
                 fullWidth
                 margin="normal"
-                onChange={(e) => field.onChange(Number(e.target.value))}
+                value={field.value}
+                onChange={(e) =>
+                  field.onChange(Number((e.target as HTMLInputElement).value))
+                }
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                disabled={saving}
               >
-                {companies.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.companyName}
+                {companies.map((company) => (
+                  <MenuItem key={company.id} value={company.id}>
+                    {company.companyName}
                   </MenuItem>
                 ))}
               </TextField>
@@ -156,12 +182,19 @@ function EmployeeFormModal({
             control={control}
             render={({ field }) => (
               <FormControlLabel
-                control={<Checkbox {...field} checked={!!field.value} />}
+                control={
+                  <Checkbox
+                    {...field}
+                    disabled={saving}
+                    checked={!!field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    inputProps={{ id: "isActive" }}
+                  />
+                }
                 label="Active"
               />
             )}
           />
-
         </DialogContent>
 
         <DialogActions>
@@ -169,9 +202,10 @@ function EmployeeFormModal({
           <Button
             type="submit"
             variant="contained"
-            disabled={!isValid}
-          >
-            {isEditMode ? "Save" : "Add"}
+            disabled={!isValid || !isDirty || saving }
+            startIcon={saving ? <CircularProgress size={20} /> : null}
+        >
+            {isEditMode ? (saving ? "Saving..." : "Save") : (saving ? "Adding..." : "Add")}
           </Button>
         </DialogActions>
       </form>

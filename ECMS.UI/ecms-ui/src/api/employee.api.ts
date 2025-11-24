@@ -4,20 +4,46 @@ import type { Employee } from "../types/employee.types";
 export const getEmployees = async (
   pageNumber: number,
   pageSize: number,
-  search?: string
+  search?: string,
+  sortBy?: string,
+  sortDir?: "asc" | "desc"
 ) => {
   const params: any = { pageNumber, pageSize };
   if (search) params.search = search;
+  if (sortBy) params.sortBy = sortBy;
+  if (sortDir) params.sortDir = sortDir;
 
   const res = await axiosInstance.get("/Employee", { params });
   return res.data;
 };
 
 export const updateEmployee = async (id: number, data: Partial<Employee>) => {
-  const res = await axiosInstance.put(`/Employee/${id}`, data);
+  const res = await axiosInstance.put(`/Employee/${id}`, {
+    fullName: data.name,
+    email: data.email,
+    phone: data.phone,
+    jobTitle: data.jobTitle,
+    companyId: data.companyId,
+    isActive: data.isActive,
+  });
+
+  return res.data;
+};
+
+export const createEmployee = async (data: Partial<Employee>) => {
+  const res = await axiosInstance.post("/Employee", {
+    fullName: data.name,
+    email: data.email,
+    phone: data.phone,
+    jobTitle: data.jobTitle,
+    companyId: data.companyId,
+    isActive: data.isActive,
+  });
+
   return res.data;
 };
 
 export const deleteEmployee = async (id: number) => {
-  await axiosInstance.delete(`/Employee/${id}`);
+  const res = await axiosInstance.delete(`/Employee/${id}`);
+  return res.data;
 };
