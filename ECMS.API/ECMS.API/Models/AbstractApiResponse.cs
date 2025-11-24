@@ -1,12 +1,19 @@
-﻿namespace ECMS.API.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ECMS.API.Models
 {
     public class AbstractApiResponse
     {
-        public EmailDeliverability Email_Deliverability { get; set; }
+        [JsonPropertyName("email_deliverability")]
+        public EmailDeliverability? EmailDeliverability { get; set; }
+
+        [JsonPropertyName("email_address")]
+        public string? EmailAddress { get; set; }
     }
 
     public class EmailDeliverability
     {
-        public string Status { get; set; }
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
     }
 }

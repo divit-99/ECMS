@@ -1,4 +1,4 @@
-﻿using ECMS.API.DTOs.Employee;
+﻿using ECMS.API.DTOs.Interface;
 using ECMS.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -18,7 +18,7 @@ namespace ECMS.API.Filters
         {
             var dto = context.ActionArguments
                              .Values
-                             .OfType<EmployeeSaveDto>()
+                             .OfType<IHasEmail>()
                              .FirstOrDefault();
 
             if (dto != null)
@@ -28,7 +28,7 @@ namespace ECMS.API.Filters
                 if (!isValid)
                 {
                     context.Result = new BadRequestObjectResult(
-                        new { error = "Email is invalid or undeliverable." }
+                        new { error = "Email is invalid or undeliverable!" }
                     );
                     return;
                 }

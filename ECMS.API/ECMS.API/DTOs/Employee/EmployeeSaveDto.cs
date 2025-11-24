@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ECMS.API.DTOs.Interface;
+using System.ComponentModel.DataAnnotations;
 
 namespace ECMS.API.DTOs.Employee
 {
-    public class EmployeeSaveDto
+    public class EmployeeSaveDto : IHasEmail
     {
         [Required, StringLength(255)]
         public string FullName { get; set; } = string.Empty;

@@ -6,7 +6,7 @@ namespace ECMS.API.Repositories.Interfaces
 {
     public interface IEmployeeRepository
     {
-        Task<IEnumerable<Employee>> GetAllAsync(int pageNumber, int pageSize, string? search);
+        Task<IEnumerable<Employee>> GetAllAsync(int pageNumber, int pageSize, string? search, string sortBy, string sortDir);
         Task<Employee?> GetByIdAsync(int id);
         Task<Employee> AddAsync(Employee employee);
         Task UpdateAsync(Employee employee);

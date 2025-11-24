@@ -40,7 +40,7 @@ namespace ECMS.API.Services
             }
 
             var response = JsonSerializer.Deserialize<AbstractApiResponse>(raw);
-            bool isValid = string.Equals(response?.Email_Deliverability?.Status, "deliverable", StringComparison.OrdinalIgnoreCase);
+            bool isValid = string.Equals(response?.EmailDeliverability?.Status, "deliverable", StringComparison.OrdinalIgnoreCase);
 
             _cache.Set(key, isValid, new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(9) });
 

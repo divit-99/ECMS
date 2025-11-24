@@ -1,4 +1,5 @@
 ﻿using ECMS.API.DTOs.User;
+using ECMS.API.Filters;
 using ECMS.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +17,13 @@ namespace ECMS.API.Controllers
         }
 
         [HttpPost("signup")]
+        [ServiceFilter(typeof(ValidateEmployeeEmailFilter))]
         public async Task<ActionResult> Signup(SignupDto dto)
         {
             var result = await _auth.SignupAsync(dto);
             if (!result)
-                return BadRequest("Error while signing-up");
-            return Ok(new { message = "Signup successful" });
+                return BadRequest("Error while signing-up!");
+            return Ok(new { message = "Signup successful!" });
         }
 
         [HttpPost("login")]
@@ -30,7 +32,7 @@ namespace ECMS.API.Controllers
             var result = await _auth.LoginAsync(dto);
             return Ok(new
             {
-                message = "Login successful",
+                message = "Login successful!",
                 data = result
             });
         }

@@ -16,7 +16,7 @@ namespace ECMS.API.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Employee>> GetAllAsync(int pageNumber, int pageSize, string? search)
+        public async Task<IEnumerable<Employee>> GetAllAsync(int pageNumber, int pageSize, string? search, string sortBy, string sortDir)
         {
             var query = _context.Employees
             .Include(e => e.Company)
@@ -32,8 +32,9 @@ namespace ECMS.API.Repositories
                     //e.Company.CompanyName.ToLower().Contains(term));
             }
 
+            query = ApplySorting(query, sortBy, sortDir);
+
             return await query
-                        .OrderBy(e => e.ID)
                         .Skip((pageNumber - 1) * pageSize)
                         .Take(pageSize)
                         .ToListAsync();
@@ -90,6 +91,7 @@ namespace ECMS.API.Repositories
             if (employee == null)
                 return false;
 
+            _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -109,6 +111,28 @@ namespace ECMS.API.Repositories
                     //e.Company.CompanyName.ToLower().Contains(term));
             }
             return await query.CountAsync();
+        }
+
+        private IQueryable<Employee> ApplySorting(IQueryable<Employee> query, string sortBy, string sortDir)
+        {
+            sortBy = sortBy?.ToLower();
+            sortDir = sortDir?.ToLower();
+            bool asc = sortDir == "asc";
+
+            return sortBy switch
+            {
+                "email" => asc ? query.OrderBy(e => e.Email)
+                               : query.OrderByDescending(e => e.Email),
+
+                "jobtitle" => asc ? query.OrderBy(e => e.JobTitle)
+                                  : query.OrderByDescending(e => e.JobTitle),
+
+                "company" => asc ? query.OrderBy(e => e.Company.CompanyName)
+                                 : query.OrderByDescending(e => e.Company.CompanyName),
+
+                _ => asc ? query.OrderBy(e => e.Name)
+                         : query.OrderByDescending(e => e.Name)
+            };
         }
     }
 }

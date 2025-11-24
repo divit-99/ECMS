@@ -23,9 +23,16 @@ namespace ECMS.API.Services
         //    return employees.Select(e => e.ToDto());
         //}
 
-        public async Task<(IEnumerable<EmployeeDto> Data, int TotalCount)> GetAllEmployeesAsync(int pageNumber, int pageSize, string? search)
+        public async Task<(IEnumerable<EmployeeDto> Data, int TotalCount)> GetAllEmployeesAsync
+        (
+            int pageNumber,
+            int pageSize,
+            string? search,
+            string sortBy,
+            string sortDir
+        )
         {
-            var employees = await _employeeRepository.GetAllAsync(pageNumber, pageSize, search);
+            var employees = await _employeeRepository.GetAllAsync(pageNumber, pageSize, search, sortBy, sortDir);
             var count = await _employeeRepository.GetCountAsync(search);
 
             var dtos = employees.Select(e => e.ToDto());

@@ -18,12 +18,15 @@ namespace ECMS.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetAll(
-                                    [FromQuery] int pageNumber = 1,
-                                    [FromQuery] int pageSize = 10,
-                                    [FromQuery] string? search = null)
+        public async Task<IActionResult> GetAll(
+            int pageNumber = 1,
+            int pageSize = 10,
+            string? search = null,
+            string sortBy = "name",
+            string sortDir = "asc"
+        )
         {
-            var (data, totalCount) = await _employeeService.GetAllEmployeesAsync(pageNumber, pageSize, search);
+            var (data, totalCount) = await _employeeService.GetAllEmployeesAsync(pageNumber, pageSize, search, sortBy, sortDir);
 
             return Ok(new
             {
@@ -41,7 +44,7 @@ namespace ECMS.API.Controllers
             var employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (employee == null)
-                throw new NotFoundException($"Employee with ID '{id}' NOT found.");
+                throw new NotFoundException($"Employee with ID '{id}' NOT found!");
             
             return employee;
         }
@@ -62,11 +65,11 @@ namespace ECMS.API.Controllers
             var updatedEmployee = await _employeeService.UpdateEmployeeAsync(id, employeeDto);
 
             if (updatedEmployee == null)
-                throw new NotFoundException($"Employee with ID '{id}' NOT found.");
+                throw new NotFoundException($"Employee with ID '{id}' NOT found!");
 
             return Ok(new
             {
-                message = "Employee details updated successfully",
+                message = "Employee details updated successfully!",
                 data = updatedEmployee
             });
         }
@@ -77,9 +80,9 @@ namespace ECMS.API.Controllers
             var deleted = await _employeeService.DeleteEmployeeAsync(id);
 
             if (!deleted)
-                throw new NotFoundException($"Employee with ID '{id}' NOT found.");
+                throw new NotFoundException($"Employee with ID '{id}' NOT found!");
 
-            return Ok(new { message = $"Employee with ID '{id}' DELETED successfully." });
+            return Ok(new { message = $"Employee deleted successfully!" });
         }
     }
 
