@@ -3,7 +3,10 @@ import { MenuItem, TextField, Dialog, DialogTitle, DialogContent, DialogActions,
 import { useForm, Controller, type SubmitHandler, type Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { Employee, Company } from "../../types/employee.types";
-import { employeeValidationSchema, type EmployeeFormData } from "../../validations/employeeValidation";
+import {
+  employeeValidationSchema,
+  type EmployeeFormData,
+} from "../../validations/employeeValidation";
 
 interface EmployeeFormModalProps {
   open: boolean;
