@@ -1,6 +1,22 @@
 import { useEffect } from "react";
-import { MenuItem, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button, FormControlLabel, Checkbox, CircularProgress } from "@mui/material";
-import { useForm, Controller, type SubmitHandler, type Resolver } from "react-hook-form";
+import {
+  MenuItem,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  FormControlLabel,
+  Checkbox,
+  CircularProgress
+} from "@mui/material";
+import {
+  useForm,
+  Controller,
+  type SubmitHandler,
+  type Resolver,
+} from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { Employee, Company } from "../../types/employee.types";
 import {
@@ -43,7 +59,7 @@ function EmployeeFormModal({
       email: "",
       phone: "",
       jobTitle: "",
-      companyId: companies && companies.length ? companies[0].id : 1,
+      companyId: companies && companies.length ? companies[0].id : 0,
       isActive: true,
     },
   });
@@ -65,7 +81,7 @@ function EmployeeFormModal({
         email: "",
         phone: "",
         jobTitle: "",
-        companyId: companies && companies.length ? companies[0].id : 1,
+        companyId: companies && companies.length ? companies[0].id : 0,
         isActive: true,
       });
     }
@@ -77,9 +93,14 @@ function EmployeeFormModal({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontSize: "4rem", px: 4 }}>{isEditMode ? "Edit Employee" : "Add Employee"}</DialogTitle>
+      <DialogTitle sx={{ fontSize: "h6", textAlign: "center" }}>
+        {isEditMode ? "Edit Employee" : "Add Employee"}
+      </DialogTitle>
 
-      <form onSubmit={handleSubmit(onSubmit)} style={{ opacity: saving ? 0.6 : 1 }}>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        style={{ opacity: saving ? 0.6 : 1 }}
+      >
         <DialogContent dividers>
           <Controller
             name="name"
@@ -154,6 +175,7 @@ function EmployeeFormModal({
           <Controller
             name="companyId"
             control={control}
+            disabled={saving}
             render={({ field, fieldState }) => (
               <TextField
                 {...field}
@@ -169,7 +191,6 @@ function EmployeeFormModal({
                 }
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message}
-                disabled={saving}
               >
                 {companies.map((company) => (
                   <MenuItem key={company.id} value={company.id}>
@@ -205,10 +226,16 @@ function EmployeeFormModal({
           <Button
             type="submit"
             variant="contained"
-            disabled={!isValid || !isDirty || saving }
+            disabled={!isValid || !isDirty || saving || companies.length === 0}
             startIcon={saving ? <CircularProgress size={20} /> : null}
-        >
-            {isEditMode ? (saving ? "Saving..." : "Save") : (saving ? "Adding..." : "Add")}
+          >
+            {isEditMode
+              ? saving
+                ? "Saving..."
+                : "Save"
+              : saving
+              ? "Adding..."
+              : "Add"}
           </Button>
         </DialogActions>
       </form>

@@ -10,15 +10,14 @@ import EmployeeFormModal from "../../components/employee/EmployeeFormModal";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 
 import { getEmployees, updateEmployee, deleteEmployee, createEmployee } from "../../api/employee.api";
-import { getCompanies } from "../../api/company.api";
-import type { Employee, Company } from "../../types/employee.types";
+import { useCompanies } from "../../hooks/useCompanies";
+import type { Employee } from "../../types/employee.types";
 import { mapEmployee } from "../../utils/mapEmployee";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function Dashboard() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [companies, setCompanies] = useState<Company[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
@@ -51,6 +50,8 @@ export default function Dashboard() {
     setToastOpen(true);
   };
 
+  const { companies } = useCompanies();
+
   // Debounce search on user input searchTerm
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,13 +61,6 @@ export default function Dashboard() {
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  // Load companies
-  useEffect(() => {
-    getCompanies()
-      .then(setCompanies)
-      .catch(() => {});
-  }, []);
 
   // Load employees
   useEffect(() => {

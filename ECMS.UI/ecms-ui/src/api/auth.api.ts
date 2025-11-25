@@ -24,8 +24,6 @@ export async function signupApi(data: {
   email: string;
   password: string;
 }) {
-  debugger;
   const res = await axiosInstance.post("/Auth/signup", data);
-  debugger;
   return res.data;
 }

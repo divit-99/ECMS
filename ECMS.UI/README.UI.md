@@ -1,7 +1,7 @@
 # Employee Contact Management System — Frontend (React + TypeScript + MUI)
 
-This repository contains the **React-based frontend** for the Employee Contact Management System.  
-The UI is fully responsive, built with **React + TypeScript + Material UI**, and communicates with a .NET Web API backend.
+A responsive, clean UI built with **React + Vite + TypeScript + Material UI** for the Employee Contact Management System.
+Handles employee CRUD, company selection, authentication, and backend-driven email validation.
 
 -----------------------------------------------------------------------
 
@@ -21,12 +21,15 @@ The UI is fully responsive, built with **React + TypeScript + Material UI**, and
 - Edit employee details
 - Delete employees, with confirmation dialog
 - Real-time validation on form fields
-- Auto-refresh after create/update/delete
+- Auto-refresh after operations
 
 ### 🏢 Company Dropdown
-- Fetch company list from API
+- Fetch company list from a custom hook
 - Pre-loaded in EmployeeFormModal
 - Dropdown to select company for each employee
+- Dropdown disabled when no companies available
+- Save/Add buttons disabled automatically
+- Prevents invalid request
 
 ### 🎯 UX & UI
 - Fully responsive layout (mobile + tablet + desktop)
@@ -35,6 +38,38 @@ The UI is fully responsive, built with **React + TypeScript + Material UI**, and
 - Debounced search for optimized API calls
 - Toast notifications for all actions
 - ErrorBoundary + fallback UI for unexpected failures
+
+### 🔧 Custom Hook — useCompanies()
+- Fetch company list from API
+- Cache response using localStorage
+- Provide loading + error states
+- Auto-refresh on mount
+
+### 🗃️ Caching
+- Reduced GetCompanies API call everytime Add/Edit pop-up is opened
+- Faster navigation
+- Works offline for company list
+- Safe auto-reload behavior
+
+---
+
+## ▶️ Getting Started
+
+### 1. Install dependencies
+
+npm install
+
+### 2. Create .env file
+
+Update backend API endpoint in `.env` file variable:
+
+'VITE_API_BASE_URL=http://localhost:7899/api'
+
+### 3. Start development server
+
+npm run dev
+
+The app will open at: http://localhost:5173
 
 ---
 
@@ -93,6 +128,8 @@ ECMS.UI/
 │       │   └── layout/         # Navbar wrapper
 │       │
 │       ├── context/            # React Context (e.g., AuthContext)
+│       │
+│       ├── hooks/              # Custom React hooks (e.g., useCompanies)
 │       │
 │       ├── layout/             # Page-level layout components (e.g., AppLayout)
 │       │
@@ -183,19 +220,5 @@ A global `axiosInstance` handles:
 Update backend API endpoint in `.env` file variable:
 
 'VITE_API_BASE_URL'
-
----
-
-## ▶️ Getting Started
-
-### 1. Install dependencies
-
-npm install
-
-### 2. Start Vite dev server
-
-npm run dev
-
-The app will open at: http://localhost:5173
 
 --------------------------------------------------------------------------------
