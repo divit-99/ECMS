@@ -23,17 +23,17 @@ namespace ECMS.API.Middlewares
             catch (ValidationException vex)
             {
                 _logger.LogWarning(vex, "Validation error");
-                await WriteError(context, StatusCodes.Status400BadRequest, vex.Message + "!");
+                await WriteError(context, StatusCodes.Status400BadRequest, vex.Message);
             }
             catch (DuplicateResourceException dex)
             {
                 _logger.LogWarning(dex, "Duplicate resource error");
-                await WriteError(context, StatusCodes.Status409Conflict, dex.Message + "!");
+                await WriteError(context, StatusCodes.Status409Conflict, dex.Message);
             }
             catch (NotFoundException ex)
             {
                 _logger.LogWarning(ex, "Not found");
-                await WriteError(context, StatusCodes.Status404NotFound, ex.Message + "!");
+                await WriteError(context, StatusCodes.Status404NotFound, ex.Message);
             }
             catch (Exception ex)
             {

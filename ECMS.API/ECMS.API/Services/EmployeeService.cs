@@ -77,11 +77,11 @@ namespace ECMS.API.Services
         private async Task ValidateCompanyAsync(int companyId)
         {
             if (companyId <= 0)
-                throw new ValidationException("CompanyId MUST be greater than 0.");
+                throw new ValidationException("CompanyId MUST be greater than 0!");
 
             var company = await _companyRepository.GetByIdAsync(companyId);
             if (company == null)
-                throw new ValidationException($"Company with ID '{companyId}' does NOT exist.");
+                throw new ValidationException($"Company with ID '{companyId}' does NOT exist!");
         }
     }
 }

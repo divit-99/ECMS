@@ -27,7 +27,7 @@
         {
             var existing = await _repo.GetByEmailAsync(dto.Email);
             if (existing != null)
-                throw new ValidationException("Email already exists.");
+                throw new ValidationException("Email already exists!");
 
             var user = new User
             {
@@ -47,11 +47,11 @@
         {
             var user = await _repo.GetByEmailAsync(dto.Email);
             if (user == null)
-                throw new ValidationException("Invalid email or password.");
+                throw new ValidationException("Invalid email or password!");
 
             var check = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
             if (check == PasswordVerificationResult.Failed)
-                throw new ValidationException("Invalid email or password.");
+                throw new ValidationException("Invalid email or password!");
 
             return new AuthResponseDto
             {

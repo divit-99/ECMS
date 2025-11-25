@@ -37,7 +37,7 @@ namespace ECMS.API.Repositories
                 if (ex.InnerException is SqlException sqlEx &&
                     sqlEx.Message.Contains("IX_Companies_Domain"))
                 {
-                    throw new DuplicateResourceException("Domain already exists.");
+                    throw new DuplicateResourceException("Domain already exists!");
                 }
                 throw;
             }
@@ -55,7 +55,7 @@ namespace ECMS.API.Repositories
                 if (ex.InnerException is SqlException sqlEx &&
                     sqlEx.Message.Contains("IX_Companies_Domain"))
                 {
-                    throw new DuplicateResourceException("Domain already exists.");
+                    throw new DuplicateResourceException("Domain already exists!");
                 }
                 throw;
             }

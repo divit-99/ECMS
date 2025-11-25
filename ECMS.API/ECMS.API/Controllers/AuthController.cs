@@ -16,7 +16,16 @@ namespace ECMS.API.Controllers
             _auth = auth;
         }
 
+        /// <summary>
+        /// Registers a new user account.
+        /// </summary>
+        /// <param name="dto">Signup request details.</param>
+        /// <returns>Success message if signup is successful.</returns>
+        /// <response code="200">Signup successful.</response>
+        /// <response code="400">Validation failed or signup error.</response>
         [HttpPost("signup")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
         [ServiceFilter(typeof(ValidateEmployeeEmailFilter))]
         public async Task<ActionResult> Signup(SignupDto dto)
         {
@@ -26,7 +35,16 @@ namespace ECMS.API.Controllers
             return Ok(new { message = "Signup successful!" });
         }
 
+        /// <summary>
+        /// Logs in an existing user.
+        /// </summary>
+        /// <param name="dto">Login details (email & password).</param>
+        /// <returns>User data and authentication result.</returns>
+        /// <response code="200">Login successful.</response>
+        /// <response code="400">Invalid credentials.</response>
         [HttpPost("login")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
         public async Task<ActionResult> Login(LoginDto dto)
         {
             var result = await _auth.LoginAsync(dto);

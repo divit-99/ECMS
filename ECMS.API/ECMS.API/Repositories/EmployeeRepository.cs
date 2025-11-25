@@ -59,7 +59,7 @@ namespace ECMS.API.Repositories
                 if (ex.InnerException is SqlException sqlEx &&
                     sqlEx.Message.Contains("IX_Employees_Email"))
                 {
-                    throw new DuplicateResourceException("Email already exists.");
+                    throw new DuplicateResourceException("Email already exists!");
                 }
                 throw;
             }
@@ -77,7 +77,7 @@ namespace ECMS.API.Repositories
                 if (ex.InnerException is SqlException sqlEx &&
                     sqlEx.Message.Contains("IX_Employees_Email"))
                 {
-                    throw new DuplicateResourceException("Email already exists.");
+                    throw new DuplicateResourceException("Email already exists!");
                 }
                 throw;
             }
